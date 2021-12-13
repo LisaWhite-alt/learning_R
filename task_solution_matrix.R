@@ -24,3 +24,15 @@ m1 <- matrix(1:12, nrow = 3)
 m2 <- matrix(10:15, ncol = 3)
 print(bind_diag(m1, m2, fill = NA))
 print(bind_diag(m1, m2, fill = 0))
+
+
+#build matrix ziggurat
+build_ziggurat <- function(n) {
+  m1 <- matrix(1, nrow=n*2-1, ncol = n*2-1)
+  for (i in 1:n) {
+    m1[i:(n*2-i), i:(n*2-i)] <- i
+  }
+  return(m1)
+}
+
+print(build_ziggurat(4))
