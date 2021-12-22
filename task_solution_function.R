@@ -66,3 +66,10 @@ r
 r_mean <- r[2] / 100000 * 100
 r_mean
 
+
+avian <- read.csv("C:/Dev/R-training/avianHabitat.csv")
+avian$Site <- stri_replace(avian$Site, regex = "[:digit:]+", "")
+avian <- subset(aggregate(avian$HHt,
+                          list(Site = avian$Site, Observer = avian$Observer),
+                          function(c) sum(c > 0)))
+avian
