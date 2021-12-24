@@ -66,10 +66,13 @@ r
 r_mean <- r[2] / 100000 * 100
 r_mean
 
-
-avian <- read.csv("C:/Dev/R-training/avianHabitat.csv")
+"""
+—читаем количество растений на каждом участке
+"""
+avian <- read.csv("C:/Dev/R_lessons/avianHabitat.csv")
 avian$Site <- stri_replace(avian$Site, regex = "[:digit:]+", "")
-avian <- subset(aggregate(avian$HHt,
+avian <- subset(aggregate(cbind(HHt = avian$HHt, DBHt = avian$DBHt, WHt = avian$WHt,
+                                EHt = avian$EHt, AHt = avian$AHt, LHt = avian$LHt),
                           list(Site = avian$Site, Observer = avian$Observer),
                           function(c) sum(c > 0)))
 avian
