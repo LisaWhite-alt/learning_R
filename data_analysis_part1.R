@@ -21,4 +21,13 @@ plot2 <- ggplot(iris, aes(x = Sepal.Length, y = Sepal.Width,
                           col = Species, size = Petal.Length)) + geom_point()
 
 red_men <- prop.table(HairEyeColor[, "Blue", "Male"])["Red"]
+sum(HairEyeColor[,"Green","Female"])
+
+library("ggplot2")
+mydata <- as.data.frame(HairEyeColor)
+obj <- ggplot(data = mydata[mydata$Sex == "Female",], aes(x = Hair, y = Freq, fill = Eye)) + 
+geom_bar(stat="identity", position = "dodge") +
+scale_fill_manual(values=c("Brown", "Blue", "Darkgrey", "Darkgreen"))
+
+main_stat <- chisq.test(table(diamonds$cut, diamonds$color))$statistic
 
