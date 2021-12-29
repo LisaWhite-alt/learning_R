@@ -87,3 +87,63 @@ outliers.rm <- function(x){
   return(x)
 }
 
+corr.calc <- function(x){
+  fit <- cor.test(x = x[,1], y = x[,2])
+  return(c(fit$estimate, fit$p.value))
+}
+
+filtered.cor <- function(x){
+  library(psych)
+  x <- x[, sapply(x, is.numeric)]
+  fit  <- corr.test(x)$r
+  diag(fit) <- 0
+  i <- which.max(abs(fit))
+  result <- fit[i]
+  return(result)
+}
+
+smart_cor <- function(x){
+  sh_test_1 <- shapiro.test(x[, 1])$p.value
+  sh_test_2 <- shapiro.test(x[, 2])$p.value
+  if (sh_test_1 < 0.05 | sh_test_2 < 0.05) {
+    result <- cor.test(x[, 1], x[, 2], method = "spearman")$estimate
+  } else {
+    result <- cor.test(x[, 1], x[, 2], method = "pearson")$estimate
+  }
+  return(result)
+}
+
+dataframe <-  read.table("dataset_11508_12.txt", sep=' ' )
+fit  <- lm(V1 ~ V2, dataframe)
+summary(fit)
+fit$coefficients
+
+regr.calc <- function(x){
+  p <- cor.test(x[, 1], x[, 2], method = "pearson")$p.value
+  if (p < 0.05) {
+    fit  <- lm(x[, 1] ~ x[, 2], x)
+    x$fit <- fit$fitted.values
+    return(x)
+  } else {
+    return("There is no sense in prediction")
+  }
+}
+
+my_plot <- ggplot(iris, aes(x = Sepal.Width, y = Petal.Width, col = Species))+
+  geom_point(size = 2)+
+  geom_smooth(method = "lm")
+
+fill_na <- function(x){
+  fit <- lm(y ~ x_1 + x_2, x, )
+  x$y_full <- predict(fit, x)
+  x$y_full <- ifelse(is.na(x$y), x$y_full, x$y)
+  return(x)
+}
+
+model_full <- lm(rating ~ ., data = attitude) 
+model_null <- lm(rating ~ 1, data = attitude)
+ideal_model <- step(object = model_null,
+                    scope = list(lower = model_null, upper = model_full),
+                    direction = "forward")
+anova(model_full, ideal_model)
+
