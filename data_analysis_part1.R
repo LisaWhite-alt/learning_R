@@ -147,3 +147,47 @@ ideal_model <- step(object = model_null,
                     direction = "forward")
 anova(model_full, ideal_model)
 
+beta.coef <- function(x){
+  a <- scale(x[[1]])
+  b <- scale(x[[2]])
+  fit <- lm(a ~ b, data = data.frame(a, b))$coefficients
+  names(fit) <- NULL
+  return(fit)
+}
+
+normality.test  <- function(x){
+  p_vector <- sapply(x, function(y) shapiro.test(y)$p.value)
+  return(p_vector)
+}
+
+df <- read.csv("homosc.csv")
+fit <- lm(DV ~ IV, data = df)
+ggplot(df, aes(x = IV, y = DV))+geom_point()+geom_smooth(method = 'lm')
+library(gvlma)
+x <- gvlma(fit)
+summary(x)
+
+resid.norm  <- function(fit){
+  p_shapiro <- shapiro.test(fit$residuals)$p.value
+  f <- ifelse(p_shapiro < 0.05, "red", "green")
+  my_plot <- ggplot(fit$model, aes(x = fit$residuals)) + geom_histogram(fill = f)
+  return(my_plot)
+}
+
+high.corr <- function(x){
+  library(psych)
+  fit  <- corr.test(x)$r
+  diag(fit) <- 0
+  m <- max(abs(fit))
+  result <- rownames(which(abs(fit) == m, arr.ind = T))
+  return(result)
+}
+
+obj <- ggplot(data = ToothGrowth, aes(x = supp, y = len)) + geom_boxplot(aes(fill = factor(dose)), col = 'black')
+
+df <- read.csv("data.csv")
+fit  <- glm(admit ~ rank*gpa, df, family = "binomial")
+df_na <- subset(df, is.na(admit),)
+df_na$admit_cor  <- predict(fit, newdata = df_na, type = "response")
+result <- sum(df_na$admit_cor >= 0.4)
+
