@@ -24,3 +24,16 @@ positive_sum <-  function(test_data){
   lapply(as.list(test_data), sum_pos)
 }
 
+my_names <- function (dataset, names){
+  v <- sapply(dataset$name, function(x) grepl(paste(names,collapse="|"), x))
+  return(dataset[v,])
+}
+
+find_outliers <- function(t){
+  number <- which(sapply(t, is.numeric) == T)
+  t$mean <- ave(t[, number], t[, -number], FUN=mean)
+  t$sd <- ave(t[, number], t[, -number], FUN=sd)
+  t$is_outlier <- ifelse(abs(t[, number] - t[, ncol(t)-1]) > (2 * t[, ncol(t)]), 1, 0)
+  return(t[,-((ncol(t)-2):(ncol(t)-1))])
+}
+
