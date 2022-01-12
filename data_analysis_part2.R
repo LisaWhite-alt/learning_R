@@ -37,3 +37,13 @@ find_outliers <- function(t){
   return(t[,-((ncol(t)-2):(ncol(t)-1))])
 }
 
+smart_lm <- function(x){
+  norm_v <- sapply(x[-1], function(y) shapiro.test(y)$p.value > 0.05)
+  if (sum(norm_v == TRUE) == 0) return(print("There are no normal variables in the data"))
+  norm_v <- c(F, norm_v)
+  c <- paste(colnames(x[norm_v == TRUE]), collapse = " + ")
+  c <- paste(c(colnames(x[1]), c), collapse = " ~ ")
+  fit <- lm(as.formula(c), data = x)
+  return(fit$coefficients)
+}
+
