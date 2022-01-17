@@ -47,3 +47,25 @@ smart_lm <- function(x){
   return(fit$coefficients)
 }
 
+one_sample_t <- function(test_data, general_mean){
+  df <- test_data[,sapply(test_data, is.numeric)]
+  b <- lapply(df, function(y) {
+    fit <- t.test(y, mu=general_mean)
+    return(c(fit$statistic, fit$parameter, fit$p.value))
+  })
+  return(b)
+}
+
+get_p_value <- function(test_list){
+  return(lapply(test_list, function(y) y$p.value))
+}
+
+d <- slice(diamonds, seq(1, nrow(diamonds), 2))
+
+my_df <- mtcars %>% 
+  select(mpg, hp, am, vs) %>% 
+  filter(mpg > 14, hp > 100) %>% 
+  arrange(desc(mpg)) %>% 
+  slice(1:10) %>% 
+  rename("Miles per gallon" = "mpg", "Gross horsepower" = "hp")
+
