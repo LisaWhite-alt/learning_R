@@ -69,3 +69,27 @@ my_df <- mtcars %>%
   slice(1:10) %>% 
   rename("Miles per gallon" = "mpg", "Gross horsepower" = "hp")
 
+all_to_factor <- function(x){
+  mutate_each(x, funs(factor(.)))
+}
+
+log_transform <- function(test_data){
+  mutate_if(test_data, is.numeric, funs(log((.-min(.))/(max(.)-min(.))+1)))
+}
+
+descriptive_stats <- function (dataset){
+  dataset$gender <- factor(dataset$gender)
+  dataset$country <- factor(dataset$country)
+  dataset %>%
+    group_by(gender, country) %>%
+    summarise(n = n(), 
+              mean = mean(salary, na.rm = T),
+              sd = sd(salary, na.rm = T),
+              median = median(salary, na.rm = T),
+              first_quartile = quantile(salary, na.rm = T, )[2],
+              third_quartile = quantile(salary, na.rm = T, )[4],
+              na_values = sum(is.na(salary)))
+}
+
+
+
