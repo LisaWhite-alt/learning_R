@@ -29,6 +29,19 @@ my_names <- function (dataset, names){
   return(dataset[v,])
 }
 
+
+to_factors <- function(test_data, factors){    
+  test_data[factors] <- mutate_each(test_data[factors], funs(factor(ifelse(. > mean(.), 1, 0))))    
+  return(test_data)}
+
+high_price <- diamonds %>%
+  group_by(color) %>%
+  arrange(desc(price)) %>%
+  select(color, price) %>%
+  slice(1:10)
+
+
+
 find_outliers <- function(t){
   number <- which(sapply(t, is.numeric) == T)
   t$mean <- ave(t[, number], t[, -number], FUN=mean)
