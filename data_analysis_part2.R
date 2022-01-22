@@ -73,6 +73,8 @@ get_p_value <- function(test_list){
   return(lapply(test_list, function(y) y$p.value))
 }
 
+library(dplyr)
+
 d <- slice(diamonds, seq(1, nrow(diamonds), 2))
 
 my_df <- mtcars %>% 
@@ -103,6 +105,78 @@ descriptive_stats <- function (dataset){
               third_quartile = quantile(salary, na.rm = T, )[4],
               na_values = sum(is.na(salary)))
 }
+
+library(data.table)
+
+filter.expensive.available <- function(products, brands) {
+  products[(price >= 500000) & (available == TRUE) & (brand %in% brands)]
+}
+
+ordered.short.purchase.data <- function(purchases) {
+  purchases[order(-price)][quantity >= 0, .(ordernumber, product_id)]
+}
+
+purchases.median.order.price <- function(purchases) {
+  purchases[quantity >= 0, .(totalcents = sum(price * quantity)), by = ordernumber][, .(median(totalcents))][[1]]
+}
+
+get.category.ratings <- function(purchases, product.category) {
+  setkey(product.category, product_id)
+  setkey(purchases, product_id)
+  dt <- merge(product.category, purchases, by = "product_id")
+  result <- dt[, .(totalcents = sum(totalcents), quantity = sum(quantity)), by=category_id]
+  return(result)
+}
+
+mark.position.portion <- function(purchases) {
+  purchases[quantity >= 0][, price.portion := as.character(format(round(price*quantity/(sum(price*quantity))*100, 2), nsmall = 2)), by=ordernumber][]
+}
+
+fix_data <- function(d){
+  fun <- function(vector) {
+    res_vector <- c()
+    for (x in vector) {
+      y <- suppressWarnings(as.numeric(gsub(" ", "", x, fixed = TRUE)))
+      if (is.na(y) == TRUE) return(vector)
+      res_vector <- c(res_vector, y)
+    }
+    return(res_vector)
+  }
+  for (i in 1:ncol(d)) {
+    d[, i] <- fun(d[, i])
+  }
+  return(d)
+}
+
+get_id <- function(data_list){
+  for (i in 1:7) names(data_list[[i]])[2] <- paste0("temp", i)
+  dt_r <- data.frame()
+  dt_r <- merge(data_list[[1]], data_list[[2]], by = "id", all.x = T, all.y = T)
+  for (i in 3:7) dt_r <- merge(dt_r, data_list[[i]], by = "id", all.x = T, all.y = T)
+  dt_r$mean_temp <- rowMeans(dt_r[,2:8])
+  dt_r[!is.na(dt_r$mean_temp),][, c(1, 9)]
+}
+
+get_strange_var <- function(d){
+  a <- lm(x ~ t, d)
+  b <- lm(x ~ z, d)
+  c <- lm(t ~ z, d)
+  res1=stats::rstandard(a)
+  a_p <- shapiro.test(res1)$p.value
+  res2=stats::rstandard(b)
+  b_p <- shapiro.test(res2)$p.value
+  res3=stats::rstandard(c)
+  c_p <- shapiro.test(res3)$p.value
+  if (a_p < 0.05 & b_p < 0.05) return("x")
+  if (b_p < 0.05 & c_p < 0.05) return("z")
+  if (c_p < 0.05 & a_p < 0.05) return("t")
+  return("There is no strange variable in the data")
+}
+
+
+
+
+
 
 
 
