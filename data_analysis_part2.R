@@ -24,6 +24,9 @@ positive_sum <-  function(test_data){
   lapply(as.list(test_data), sum_pos)
 }
 
+library(ggplot2)
+
+
 my_names <- function (dataset, names){
   v <- sapply(dataset$name, function(x) grepl(paste(names,collapse="|"), x))
   return(dataset[v,])
@@ -173,8 +176,83 @@ get_strange_var <- function(d){
   return("There is no strange variable in the data")
 }
 
+library(ggplot2)
 
+depth_hist <- qplot(x = depth, data = diamonds)
 
+price_carat_clarity_points <- qplot(x = carat, 
+                                    y = price, 
+                                    color = factor(clarity), 
+                                    data = diamonds)
+
+x_density <- qplot(x = x, 
+                   data = diamonds,
+                   geom = "density")
+x_cut_density <- qplot(x = x,
+                       color = factor(cut),
+                       data = diamonds,
+                       geom = "density")
+
+price_violin <- qplot(x = factor(color),
+                      y = price,
+                      data = diamonds,
+                      geom = "violin" )
+
+my_plot <- ggplot(mtcars, aes(factor(am), mpg)) +
+  geom_violin() +
+  geom_boxplot(width = 0.2)
+
+my_plot <- ggplot(sales, aes(income, sale)) + 
+  geom_point(aes(col = shop), size = 3) + 
+  geom_smooth(formula = y ~ x, method = "lm")
+
+my_plot <- ggplot(sales, aes(shop, income, col = season))+
+  stat_summary(fun.data = mean_cl_boot,
+               geom = "pointrange",
+               position = position_dodge(0.2))
+
+my_plot <-  ggplot(sales, aes(date, sale, col = shop)) +
+  stat_summary(fun.data = mean_cl_boot, 
+               geom = "errorbar", 
+               width = 0.2,
+               position = position_dodge(0.2)) + 
+  stat_summary(fun.data = mean_cl_boot,
+               geom = "point", 
+               size = 2, 
+               position = position_dodge(0.2)) + 
+  stat_summary(fun.data = mean_cl_boot,
+               geom = "line", 
+               position = position_dodge(0.2)) 
+
+mpg_facet <- ggplot(mtcars, aes(mpg)) +
+  geom_dotplot() + 
+  facet_grid(am ~ vs)
+
+sl_wrap <- ggplot(iris, aes(Sepal.Length)) +
+  geom_density() +
+  geom_hline(yintercept = 0) + 
+  facet_wrap(~ Species)
+
+my_plot <- ggplot(iris, aes(Sepal.Length, Sepal.Width)) + 
+  geom_point() +
+  geom_smooth() + 
+  facet_wrap(~ Species)
+
+my_plot <- ggplot(myMovieData, aes(Type, Budget)) +
+  geom_boxplot() +
+  facet_grid(. ~ Year) + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+iris_plot <- ggplot(iris, aes(Sepal.Length, Petal.Length, col = Species))+
+  geom_point() +
+  geom_smooth(method = "lm")+
+  scale_color_discrete(name = "Вид цветка", 
+                       labels = c("Ирис щетинистый", "Ирис разноцветный", "Ирис виргинский"))+
+  scale_x_continuous(name = "Длина чашелистика",
+                     breaks = seq(4, 8, 1),
+                     limits = c(4, 8))+ 
+  scale_y_continuous(name = "Длина лепестка",
+                     breaks = seq(1, 7, 1))
 
 
 
