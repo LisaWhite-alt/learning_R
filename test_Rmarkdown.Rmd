@@ -1,0 +1,42 @@
+---
+title: "Study glacier"
+author: "Katerina"
+date: "23 01 2022"
+output:
+   html_document:
+     code_folding: hide
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+```
+
+## Data for study
+
+```{r, echo=FALSE}
+df <- read.csv("glacier.csv", na.strings = "..", comment.char = "#")
+head(df)
+```
+
+## Subscribe
+
+```{r, echo=FALSE}
+df$GEO <- factor(df$GEO)
+library(dplyr)
+gr_df <- group_by(df, GEO, Ref_Date)
+se_df <- summarise(gr_df, Count = n())
+ct <- group_by(se_df, GEO)
+dt <- summarise(ct, Count = n())
+min_count <- min(dt$Count)
+a <- dt[dt$Count == min_count,][1]
+
+df_annual <- df[df$MEASURE == "Annual mass balance",]
+df_annual_gr <- group_by(df_annual, GEO)
+df_annual_gr_sum <- summarise(df_annual_gr, median=median(Value, na.rm = T))
+min_count_med <- min(abs(df_annual_gr_sum$median))
+b <- df_annual_gr_sum[abs(df_annual_gr_sum$median) == min_count_med,][1]
+
+c <- df[is.na(df$Value),][2]
+```
+
+Среди шести изучаемых ледников самую короткую историю наблюдений имеет `r a`. При этом ледник, для которого медианное значение изменения (переменная Value для Annual Mass Balance) наиболее близко к нулю, называется `r b`. Единственное пропущенное значение содержит история наблюдений ледника `r c`. 

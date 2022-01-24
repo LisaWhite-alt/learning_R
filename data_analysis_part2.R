@@ -24,6 +24,13 @@ positive_sum <-  function(test_data){
   lapply(as.list(test_data), sum_pos)
 }
 
+make.fancy.teapot <- function(teapot.coords) {
+  i.s <- seq(0, length(teapot.coords$x) - 2, 3)
+  j.s <- seq(1, length(teapot.coords$x) - 1, 3)
+  k.s <- seq(2, length(teapot.coords$x), 3)
+  plot_ly(teapot.coords, x = ~x, y = ~y, z = ~z, i = ~i.s, j = ~j.s, k = ~k.s, type = "mesh3d")
+}
+
 library(ggplot2)
 
 
@@ -253,6 +260,27 @@ iris_plot <- ggplot(iris, aes(Sepal.Length, Petal.Length, col = Species))+
                      limits = c(4, 8))+ 
   scale_y_continuous(name = "Длина лепестка",
                      breaks = seq(1, 7, 1))
+
+library("rmarkdown")
+
+df <- read.csv("glacier.csv", na.strings = "..", comment.char = "#")
+
+df$GEO <- factor(df$GEO)
+library(dplyr)
+gr_df <- group_by(df, GEO, Ref_Date)
+se_df <- summarise(gr_df, Count = n())
+ct <- group_by(se_df, GEO)
+dt <- summarise(ct, Count = n())
+min_count <- min(dt$Count)
+a <- dt[dt$Count == min_count,][1]
+
+df_annual <- df[df$MEASURE == "Annual mass balance",]
+df_annual_gr <- group_by(df_annual, GEO)
+df_annual_gr_sum <- summarise(df_annual_gr, median=median(Value, na.rm = T))
+min_count_med <- min(abs(df_annual_gr_sum$median))
+b <- df_annual_gr_sum[abs(df_annual_gr_sum$median) == min_count_med,][1]
+
+c <- df[is.na(df$Value),][2]
 
 
 
