@@ -73,5 +73,22 @@ obj <- ggplot(diamonds, aes(x = color, fill = cut)) +
   geom_bar(position=position_dodge())
 
 
+get_coefficients <- function(dataset){
+  test_data <- transform(test_data, x = factor(x), y = factor(y))
+  fit <- glm(y ~ x, test_data, family = "binomial")
+  c <- coef(fit)
+  return(sapply(c, exp))
+}
 
-get_important_cases(test_data)
+get_coefficients(test_data)
+
+
+centered <- function(test_data, var_names){
+  test_data[var_names] <- lapply(test_data[var_names], function (x) x = x - mean(x))
+  return(test_data)
+}
+
+var_names = c("X4", "X2", "X1")
+centered(test_data, var_names)
+
+
