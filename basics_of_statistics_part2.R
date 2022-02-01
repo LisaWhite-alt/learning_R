@@ -92,3 +92,62 @@ var_names = c("X4", "X2", "X1")
 centered(test_data, var_names)
 
 
+get_features <- function(dataset){
+  test_data <- transform(test_data, is_prohibited = factor(is_prohibited), 
+                         type = factor(type))
+  fit <- glm(is_prohibited ~ weight + length + width + type, test_data, 
+             family = "binomial")
+  result <- anova(fit, test = "Chisq")
+  result_var <- rownames(result)[2:nrow(result)][result[2: nrow(result), 
+                                                        "Pr(>Chi)"] < 0.05]
+  if (length(result_var) == 0) return("Prediction makes no sense")
+  return(result_var)
+}
+
+most_suspicious <- function(test_data, data_for_predict){
+  test_data <- transform(test_data, is_prohibited = factor(is_prohibited), 
+                         type = factor(type))
+  fit <- glm(is_prohibited ~ weight + length + width + type, test_data, 
+             family = "binomial")
+  data_for_predict$corr  <- predict(fit, newdata = data_for_predict, type = "response")
+  result <- data_for_predict$passangers[which(data_for_predict$corr == max(data_for_predict$corr))]
+  return(result)
+}
+
+
+normality_test <- function(dataset){
+  data <- dataset[sapply(dataset, is.numeric)]
+  result <- sapply(data, function (x) shapiro.test(x)$p.value)
+  return(result)
+}
+
+
+smart_anova <- function(test_data){
+  test_data$y <- factor(test_data$y)
+  sh <- aggregate(test_data$x, by = list(test_data$y), function(x) shapiro.test(x)$p.value)
+  ba <- bartlett.test(test_data$x, test_data$y)$p.value
+  if (all(sh$x >= 0.05) & (ba >= 0.05)) {
+    fit <- aov(x ~ y, data = test_data)
+    p_value <- c("ANOVA" = summary(fit)[[1]]$'Pr(>F)'[1])
+  } else {
+    fit <- kruskal.test(x ~ y, data = test_data)
+    p_value <- c("KW" = fit$p.value)
+  }
+  return(p_value)
+}
+
+library(dplyr)
+normality_by <- function(test){
+  result <- data.frame(test %>%
+  group_by(y, z) %>%
+  summarise(p_value = shapiro.test(x)$p.value))
+  return(result)
+}
+
+
+obj <- ggplot(iris, aes(Sepal.Length, fill = Species)) + geom_density(alpha = 0.2)
+
+
+
+  
+
