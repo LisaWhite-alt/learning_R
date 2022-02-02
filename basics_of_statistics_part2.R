@@ -148,6 +148,64 @@ normality_by <- function(test){
 obj <- ggplot(iris, aes(Sepal.Length, fill = Species)) + geom_density(alpha = 0.2)
 
 
+smart_hclust <- function(test_data, cluster_number){
+  dist_matrix <- dist(test_data)
+  fit <- hclust(dist_matrix)
+  cluster <- cutree(fit, cluster_number)
+  test_data$cluster <- factor(cluster)
+  return(test_data)
+}
+
+
+get_difference <- function(test_data, n_cluster){
+  dist_matrix <- dist(test_data)
+  fit <- hclust(dist_matrix)
+  cluster <- cutree(fit, n_cluster)
+  test_data$cluster <- factor(cluster)
+  p_values <- sapply(test_data[-ncol(test_data)], function(x) summary(aov(x ~ cluster, test_data)))
+  result <- sapply(p_values, function(x) x$`Pr(>F)`[1] < 0.05)
+  return(names(test_data[-ncol(test_data)])[result])
+}
+
+
+get_pc <- function(d){
+  result <- prcomp(d)$x
+  d$PC1 <- result[, 1]
+  d$PC2 <- result[, 2]
+  return(d)
+}
+
+
+get_pca2 <- function(data){
+  fit <- prcomp(data)
+  result <- summary(fit)$importance[3, ]
+  number <- min(which(result > 0.9))
+  data <- cbind(data, fit$x[, 1:number])
+  return(data)
+}
+
+
+swiss <- smart_hclust(swiss, 2)
+library(ggplot2)
+my_plot <- ggplot(swiss, aes(Education, Catholic, col = cluster)) +
+  geom_point() + geom_smooth(method = "lm")
+
+
+library(dplyr)
+
+is_multicol <- function(d){
+  result <- c()
+  for (i in 1:(ncol(d)-1)) {
+    for (j in (i+1):ncol(d)) {
+      model <- lm(d[, j] ~ d[, i])
+      if (near(abs(model$coefficients[2]), 1)) result <- c(result, names(d)[j], names(d)[i])            
+    }
+  }
+  if (length(result) == 0) return("There is no collinearity in the data") else return(result)
+}
+
+
+
 
   
 
