@@ -74,6 +74,50 @@ transform_x <-  function(test_data){
 }
 
 
+plot_1 <- ggplot(exp_data, aes(scenario, frequency, fill = attitude)) +
+  geom_boxplot(position=position_dodge())
+
+
+plot_2 <- ggplot(exp_data, aes(frequency, fill = subject)) + 
+  geom_density(alpha = 0.2) + 
+  facet_wrap(~ gender, nrow = 2)
+
+
+fit_1 <- lmer(frequency ~ attitude + (1|subject) + (1|scenario), data=exp_data)
+
+
+fit_2 <- lmer(frequency ~ attitude + gender + (1|subject) + (1|scenario), data=exp_data)
+
+
+fit_3 <- lmer(frequency ~ attitude + gender + 
+                (1 + attitude|subject) + (1 + attitude|scenario), data=exp_data)
+
+
+median_cl_boot <- function(x){
+  med_x <- median(x)
+  delta <- c()
+  for (i in 1:1000) {
+    y <- sample(x, length(x), replace = T)
+    med_y <- median(y)
+    delta <- c(delta, med_x-med_y)
+  }
+  q <- quantile(delta, probs = c(0.05, 0.95))
+  return(c(q[1]+med_x, q[2]+med_x))
+}
+
+
+slope_cl_boot <- function(x){
+  coef_x <- cor(x[, 2], x[, 1])
+  delta <- c()
+  for (i in 1:1000) {
+    y <- x[sample(nrow(x), nrow(x), replace = T), ]
+    coef_y <- cor(y[, 2], y[, 1])
+    delta <- c(delta, coef_x-coef_y)
+  }
+  q <- quantile(delta, probs = c(0.05, 0.95))
+  return(c(q[1]+coef_x, q[2]+coef_x))
+}
+
 
 
 
